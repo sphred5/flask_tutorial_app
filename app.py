@@ -59,14 +59,7 @@ def register():
         cur.close()
         flash('you are now registered and can login', 'success')
         redirect(url_for('index'))
-
-        return render_template('register.html')
     return render_template('register.html', form = form)
-
-
-
-
-
 
 if __name__ == '__main__':
     app.secret_key = "secret123"

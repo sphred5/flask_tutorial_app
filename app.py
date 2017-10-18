@@ -3,6 +3,7 @@ from flask_mysqldb import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
 from data import Articles
+from functools import wraps
 
 app = Flask(__name__)
 
@@ -20,14 +21,19 @@ Articles = Articles()
 def index():
     return render_template('home.html')
 
+#About
+
 @app.route('/about')
 def about():
     return render_template('about.html')
+
+#Articles page
 
 @app.route('/articles')
 def articles():
     return render_template('articles.html', articles = Articles)
 
+#Individual article
 @app.route('/article/<string:id>/')
 def article(id):
     return render_template('article.html', id=id)
@@ -41,6 +47,7 @@ class RegisterForm(Form):
     ])
     confirm = PasswordField('Confirm Password')
 
+#registration form
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm(request.form)
@@ -98,6 +105,16 @@ def login():
             return render_template('login.html', error)
 
     return render_template('login.html')
+#Check if user is logged in
+def is_logged_in(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if 'logged_in' in session:
+            return f(*args, **kwargs)
+        else:
+            flash('Unotherized Please Login', 'danger')
+            return redirect(url_for('login'))
+    return wrap
 #logout
 @app.route('/logout')
 def logout():
@@ -107,6 +124,7 @@ def logout():
 
 #dashboard
 @app.route('/dashboard')
+@is_logged_in
 def dashboard():
     return render_template('dashboard.html')
 

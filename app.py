@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash, redirect, url_for, session, logging, request
+from flask import Flask, render_template, flash, redirect, url_for, session, request, logging
 from flask_mysqldb import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from passlib.hash import sha256_crypt
@@ -62,7 +62,7 @@ def register():
     return render_template('register.html', form = form)
 
 #user login
-@app.route('/login', methods = ['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         #get form fields
@@ -81,14 +81,34 @@ def login():
             password = data['password']
 
             #compare Passwords
-            if sha256_crypt.varify(password_candidate, password):
-                app.logger.info('PASSWORD MATCHED')
-            else:
-                app.logger.info('PASSWORD NOT MATCHED')
+            if sha256_crypt.verify(password_candidate, password):
+                # Passed
+                session['logged_in'] = True
+                session['username'] = username
+                flash('You are now logged in', 'success')
+                return redirect(url_for('dashboard'))
 
+            else:
+                error = "Invalid login"
+                return render_template('login.html', error=error)
+            #close cursor
+            cur.close()
         else:
-            app.logger.info('NO USER')
+            error = "Username not found"
+            return render_template('login.html', error)
+
     return render_template('login.html')
+#logout
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('You are now logged out', 'success')
+    return redirect(url_for('login'))
+
+#dashboard
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')
 
 if __name__ == '__main__':
     app.secret_key = "secret123"

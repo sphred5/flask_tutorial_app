@@ -7,6 +7,7 @@ from functools import wraps
 
 app = Flask(__name__)
 
+
 #config MySQL
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
